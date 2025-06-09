@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
-import { sendMessage } from '../utils/api';
+import { sendMessageStreaming, StreamingEventHandler } from '../utils/api';
 import { Message } from '../types';
 export function Chat() {
   const [messages, setMessages] = useState<Message[]>([{
@@ -12,7 +12,8 @@ export function Chat() {
   }]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const handleSendMessage = async (content: string) => {
+
+  const handleSendMessage = (content: string) => {
     if (!content.trim()) return;
     // Add user message
     const userMessage: Message = {
@@ -23,36 +24,50 @@ export function Chat() {
     };
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
-    try {
-      const response = await sendMessage(content, messages);
-      // Add AI response
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
+
+    // Prepare a new assistant message for streaming
+    const aiMessageId = (Date.now() + 1).toString();
+    setMessages(prev => [
+      ...prev,
+      {
+        id: aiMessageId,
         role: 'assistant',
-        content: response,
+        content: '',
         timestamp: new Date()
-      };
-      setMessages(prev => [...prev, aiMessage]);
-    } catch (error) {
-      // Add error message
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'system',
-        content: 'Sorry, there was an error processing your request. Please try again or check your API configuration.',
-        timestamp: new Date(),
-        isError: true
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
+      }
+    ]);
+
+    let accumulated = '';
+    const handlers: StreamingEventHandler = {
+      onToken: (token) => {
+        accumulated += token;
+        setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: accumulated } : m));
+      },
+      onComplete: (completeText) => {
+        setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: completeText } : m));
+        setIsLoading(false);
+      },
+      onError: (error) => {
+        setMessages(prev => prev.map(m => m.id === aiMessageId ? {
+          ...m,
+          role: 'system',
+          content: 'Sorry, there was an error processing your request. Please try again or check your API configuration.',
+          isError: true
+        } : m));
+        setIsLoading(false);
+      }
+    };
+
+    sendMessageStreaming(content, messages, handlers);
   };
+
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
       behavior: 'smooth'
     });
   }, [messages]);
+
   return <div className="flex-1 flex flex-col max-w-4xl w-full mx-auto">
       <div className="flex-1 overflow-y-auto p-4">
         <MessageList messages={messages} />
