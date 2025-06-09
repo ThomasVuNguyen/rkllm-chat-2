@@ -13,13 +13,13 @@ export function loadConfig(): Config {
       return JSON.parse(savedConfig) as Config;
     } catch (e) {
       return {
-        apiEndpoint: 'http://10.20.114.33:8080/v1',
+        apiEndpoint: 'http://100.65.35.72:8080/v1',
         apiKey: 'sk-rkllm-api-key'
       };
     }
   }
   return {
-    apiEndpoint: 'http://10.20.114.33:8080/v1',
+    apiEndpoint: 'http://100.65.35.72:8080/v1',
     apiKey: 'sk-rkllm-api-key'
   };
 }
