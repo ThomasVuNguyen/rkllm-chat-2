@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "npx vite",
     "build": "npx vite build",
@@ -12,7 +15,6 @@
   },
   "dependencies": {
     "clsx": "latest",
-    "express": "^5.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwind-merge": "latest"
