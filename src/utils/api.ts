@@ -38,7 +38,7 @@ export async function sendMessage(content: string, previousMessages: Message[]):
 
   // TEMPORARY FIX: Hardcode the exact URL that works in the Python client
   // This bypasses any localStorage or configuration issues
-  const finalUrl = 'http://100.65.35.72:8080/v1/chat/completions';
+  const finalUrl = 'http://100.65.35.72:8080/v1/completions';
 
   // Log the request details for debugging
   console.log('Making API request to:', finalUrl);
