@@ -17,7 +17,7 @@ export async function sendMessage(content: string, previousMessages: Message[]):
     content
   });
   try {
-    const response = await fetch(config.apiEndpoint, {
+    const response = await fetch(`${config.apiEndpoint}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -26,7 +26,7 @@ export async function sendMessage(content: string, previousMessages: Message[]):
         })
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'rkllm-local',
         messages,
         max_tokens: 500
       })
